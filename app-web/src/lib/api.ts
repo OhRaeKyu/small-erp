@@ -25,12 +25,10 @@ function refreshToken(): Promise<boolean> {
 }
 
 async function send(path: string, init: RequestInit): Promise<Response> {
+  // FormData(파일 첨부)는 브라우저가 multipart 경계를 넣도록 Content-Type을 비워 둔다
+  const headers = init.body instanceof FormData ? init.headers : { "Content-Type": "application/json", ...init.headers };
   try {
-    return await fetch(path, {
-      ...init,
-      credentials: "same-origin",
-      headers: { "Content-Type": "application/json", ...init.headers },
-    });
+    return await fetch(path, { ...init, credentials: "same-origin", headers });
   } catch {
     throw new ApiError(0, "NETWORK", "서버에 연결할 수 없습니다. 잠시 후 다시 시도해 주세요.");
   }

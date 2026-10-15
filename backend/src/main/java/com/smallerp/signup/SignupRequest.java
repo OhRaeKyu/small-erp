@@ -88,6 +88,10 @@ public class SignupRequest extends BaseTimeEntity {
         this.rejectReason = reason;
     }
 
+    public void attachCertificate(String fileKey) {
+        this.certificateFileKey = fileKey;
+    }
+
     private void requirePending() {
         if (status != SignupStatus.PENDING) {
             throw new ApiException(ErrorCode.ALREADY_REVIEWED);

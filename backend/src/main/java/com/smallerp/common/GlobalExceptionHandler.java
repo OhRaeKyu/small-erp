@@ -9,6 +9,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -31,6 +32,11 @@ public class GlobalExceptionHandler {
     @ExceptionHandler({HttpMessageNotReadableException.class, MethodArgumentTypeMismatchException.class})
     public ResponseEntity<ErrorResponse> handleBadRequest(Exception e) {
         return ResponseEntity.badRequest().body(ErrorResponse.of(ErrorCode.INVALID_INPUT));
+    }
+
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    public ResponseEntity<ErrorResponse> handleUploadSize(MaxUploadSizeExceededException e) {
+        return ResponseEntity.badRequest().body(ErrorResponse.of(ErrorCode.FILE_TOO_LARGE));
     }
 
     /** 동시에 같은 사업자번호로 신청이 들어와 부분 유니크 인덱스에 걸린 경우 */

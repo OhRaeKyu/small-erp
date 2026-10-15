@@ -11,6 +11,8 @@ import com.smallerp.common.ErrorCode;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import com.smallerp.storage.FileStorage;
+import java.io.InputStream;
 import java.time.Instant;
 import java.util.EnumMap;
 import java.util.HashMap;
@@ -21,6 +23,12 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.http.CacheControl;
+import org.springframework.http.ContentDisposition;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -43,10 +51,13 @@ public class AdminSignupRequestController {
     private final PlatformAdminRepository admins;
     private final AdminAuditLogRepository auditLogs;
     private final SignupReviewService reviewService;
+    private final FileStorage fileStorage;
 
     public AdminSignupRequestController(SignupRequestRepository signupRequests,
                                         IndustryPackRepository industryPacks, PlatformAdminRepository admins,
-                                        AdminAuditLogRepository auditLogs, SignupReviewService reviewService) {
+                                        AdminAuditLogRepository auditLogs, SignupReviewService reviewService,
+                                        FileStorage fileStorage) {
+        this.fileStorage = fileStorage;
         this.signupRequests = signupRequests;
         this.industryPacks = industryPacks;
         this.admins = admins;
@@ -104,6 +115,26 @@ public class AdminSignupRequestController {
     public SignupRequestDetail detail(@PathVariable Long id) {
         SignupRequest r = signupRequests.findById(id).orElseThrow(() -> new ApiException(ErrorCode.NOT_FOUND));
         return toDetail(r);
+    }
+
+    /** 사업자등록증 보기 (관리자만). 브라우저에서 바로 열리도록 inline으로 내려준다. */
+    @GetMapping("/{id}/certificate")
+    @Transactional(readOnly = true)
+    public ResponseEntity<InputStreamResource> certificate(@PathVariable Long id) {
+        SignupRequest r = signupRequests.findById(id).orElseThrow(() -> new ApiException(ErrorCode.NOT_FOUND));
+        String key = r.getCertificateFileKey();
+        if (key == null) {
+            throw new ApiException(ErrorCode.NOT_FOUND);
+        }
+        CertificateFile type = CertificateFile.fromKey(key);
+        InputStream in = fileStorage.open(key).orElseThrow(() -> new ApiException(ErrorCode.NOT_FOUND));
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType(type.contentType()))
+                .header(HttpHeaders.CONTENT_DISPOSITION, ContentDisposition.inline()
+                        .filename("certificate-" + r.getBusinessNo() + "." + type.extension()).build().toString())
+                .header("X-Content-Type-Options", "nosniff")
+                .cacheControl(CacheControl.noStore())
+                .body(new InputStreamResource(in));
     }
 
     @PostMapping("/{id}/approve")
