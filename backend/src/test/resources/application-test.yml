@@ -1,0 +1,8 @@
+spring:
+  datasource:
+    url: ${TEST_DB_URL:jdbc:postgresql://localhost:5432/erp_test}
+    username: ${DB_USERNAME:erp}
+    password: ${DB_PASSWORD:erp}
+app:
+  seed:
+    enabled: false
