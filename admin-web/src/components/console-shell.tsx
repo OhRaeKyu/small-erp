@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { api, ApiError } from "@/lib/api";
 import type { AdminMe } from "@/lib/types";
 
@@ -15,7 +15,6 @@ const NAV: { group: string; items: { label: string; href?: string }[] }[] = [
 
 export default function ConsoleShell({ children }: { children: React.ReactNode }) {
   const router = useRouter();
-  const pathname = usePathname();
   const [me, setMe] = useState<AdminMe | null>(null);
 
   useEffect(() => {
@@ -39,31 +38,9 @@ export default function ConsoleShell({ children }: { children: React.ReactNode }
           <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-brand-500 text-sm">A</span>
           관리자 콘솔
         </div>
-        <nav className="space-y-5 px-3 py-4 text-sm">
-          {NAV.map((section) => (
-            <div key={section.group}>
-              <div className="px-3 pb-1.5 text-[11px] font-semibold tracking-wide text-slate-500">{section.group}</div>
-              {section.items.map((item) =>
-                item.href ? (
-                  <Link
-                    key={item.label}
-                    href={item.href}
-                    className={`block rounded-lg px-3 py-2 ${
-                      pathname.startsWith(item.href) ? "bg-slate-800 font-medium text-white" : "hover:bg-slate-800/60"
-                    }`}
-                  >
-                    {item.label}
-                  </Link>
-                ) : (
-                  <div key={item.label} className="flex justify-between px-3 py-2 text-slate-500">
-                    {item.label}
-                    <span className="text-[11px]">준비 중</span>
-                  </div>
-                ),
-              )}
-            </div>
-          ))}
-        </nav>
+        <Suspense fallback={<nav className="px-3 py-4" />}>
+          <ConsoleNav />
+        </Suspense>
       </aside>
       <div className="flex min-w-0 flex-1 flex-col">
         <header className="flex h-14 items-center justify-end gap-3 border-b border-gray-200 bg-white px-6 text-sm">
@@ -82,4 +59,35 @@ export default function ConsoleShell({ children }: { children: React.ReactNode }
       </div>
     </div>
   );
+}
+
+/** 현재 경로를 읽는 부분만 Suspense 안에 둔다 (동적 경로 프리렌더 대응) */
+function ConsoleNav() {
+  const pathname = usePathname();
+  return (
+    <nav className="space-y-5 px-3 py-4 text-sm">
+      {NAV.map((section) => (
+        <div key={section.group}>
+          <div className="px-3 pb-1.5 text-[11px] font-semibold tracking-wide text-slate-500">{section.group}</div>
+          {section.items.map((item) =>
+            item.href ? (
+              <Link
+                key={item.label}
+                href={item.href}
+                className={`block rounded-lg px-3 py-2 ${
+                  pathname.startsWith(item.href) ? "bg-slate-800 font-medium text-white" : "hover:bg-slate-800/60"
+                }`}
+              >
+                {item.label}
+              </Link>
+            ) : (
+              <div key={item.label} className="flex justify-between px-3 py-2 text-slate-500">
+                {item.label}
+                <span className="text-[11px]">준비 중</span>
+              </div>
+            ),
+          )}
+        </div>
+      ))}
+    </nav>);
 }

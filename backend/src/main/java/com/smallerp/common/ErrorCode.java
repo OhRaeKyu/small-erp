@@ -13,6 +13,8 @@ public enum ErrorCode {
     ACCOUNT_LOCKED(HttpStatus.FORBIDDEN, "잠긴 계정입니다. 관리자에게 문의해 주세요."),
     TENANT_SUSPENDED(HttpStatus.FORBIDDEN, "이용이 정지된 사업장입니다. 관리자에게 문의해 주세요."),
     NO_MEMBERSHIP(HttpStatus.FORBIDDEN, "소속된 사업장이 없습니다."),
+    NOT_FOUND(HttpStatus.NOT_FOUND, "대상을 찾을 수 없습니다."),
+    ALREADY_REVIEWED(HttpStatus.CONFLICT, "이미 처리된 회원가입 요청입니다."),
     ALREADY_REGISTERED(HttpStatus.CONFLICT, "이미 가입된 사업자등록번호입니다."),
     SIGNUP_ALREADY_PENDING(HttpStatus.CONFLICT, "이 사업자등록번호로 검토 중인 회원가입이 있습니다.");
 

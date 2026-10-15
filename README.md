@@ -41,6 +41,11 @@ cd admin-web && npm install && npm run dev    # http://localhost:3001
 | 사용자 | `123-45-67891` | `test1234!` | 승인된 사업장 "달콤케이크 공방" |
 | 사용자 | `214-87-00124` | `test1234!` | 회원가입 승인 대기 → 로그인 시 안내 문구 |
 
+### 메일
+
+SMTP 설정(`SPRING_MAIL_HOST`, `SPRING_MAIL_PORT`, `SPRING_MAIL_USERNAME`, `SPRING_MAIL_PASSWORD`, `MAIL_FROM`)이 없으면
+메일을 보내지 않고 백엔드 로그에 내용만 남깁니다. 로컬 개발은 이 상태로 충분합니다.
+
 ## 테스트
 
 ```bash
@@ -65,6 +70,9 @@ cd app-web && npm run lint && npm run build
 | POST | `/api/admin/auth/logout` | 로그아웃 |
 | GET | `/api/admin/signup-requests` | 회원가입 요청 목록. `status`, `q`(사업자번호·상호·대표자), `sort`(OLDEST 기본/LATEST), `page`, `size` |
 | GET | `/api/admin/signup-requests/counts` | 상태별 건수 |
+| GET | `/api/admin/signup-requests/{id}` | 상세 (같은 사업자번호의 다른 요청, 작업 이력 포함) |
+| POST | `/api/admin/signup-requests/{id}/approve` | 승인: 사업장·계정·소속 생성, 업종 팩 적용, 작업 이력, 안내 메일 (한 트랜잭션, 메일은 커밋 후 비동기) |
+| POST | `/api/admin/signup-requests/{id}/reject` | 반려 (사유 5자 이상), 작업 이력, 안내 메일 |
 
 ## 브랜치 전략
 

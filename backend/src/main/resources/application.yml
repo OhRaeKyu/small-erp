@@ -26,6 +26,10 @@ app:
     refresh-token-ttl: ${JWT_REFRESH_TTL:P14D}
   cookie:
     secure: ${COOKIE_SECURE:false}
+  mail:
+    # 안내 메일 보낸 사람. SMTP는 spring.mail.host/username/password 환경변수
+    # (SPRING_MAIL_HOST 등)가 있을 때만 쓰고, 없으면 메일 내용을 로그로만 남긴다.
+    from: ${MAIL_FROM:no-reply@smallerp.local}
   seed:
     # local 프로필에서 관리자·샘플 데이터를 넣는다
     enabled: false
