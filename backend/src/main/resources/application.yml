@@ -14,6 +14,11 @@ spring:
         jdbc.time_zone: UTC
   flyway:
     enabled: true
+  servlet:
+    multipart:
+      # 사업자등록증 5MB + 입력값
+      max-file-size: 5MB
+      max-request-size: 6MB
 
 server:
   port: ${PORT:8080}
@@ -26,6 +31,9 @@ app:
     refresh-token-ttl: ${JWT_REFRESH_TTL:P14D}
   cookie:
     secure: ${COOKIE_SECURE:false}
+  storage:
+    # 첨부파일(사업자등록증) 저장 경로. 웹으로 노출하지 않는 비공개 디렉터리.
+    dir: ${STORAGE_DIR:./data/uploads}
   mail:
     # 안내 메일 보낸 사람. SMTP는 spring.mail.host/username/password 환경변수
     # (SPRING_MAIL_HOST 등)가 있을 때만 쓰고, 없으면 메일 내용을 로그로만 남긴다.

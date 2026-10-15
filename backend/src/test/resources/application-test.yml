@@ -6,3 +6,5 @@ spring:
 app:
   seed:
     enabled: false
+  storage:
+    dir: build/test-uploads

@@ -59,7 +59,9 @@ cd app-web && npm run lint && npm run build
 
 | 메서드 | 경로 | 설명 |
 |---|---|---|
-| POST | `/api/public/signup-requests` | 회원가입 요청 (사업자번호 검증번호 확인, 중복 요청 차단) |
+| GET | `/api/public/industry-packs` | 회원가입 화면의 업종 목록 |
+| POST | `/api/public/signup-requests` | 회원가입 요청 (사업자번호 검증번호 확인, 중복 요청 차단). JSON, 또는 등록증 첨부 시 multipart(`request` JSON + `certificate` 파일: jpg·png·pdf, 5MB 이하) |
+| POST | `/api/public/signup-requests/status` | 사업자번호 + 비밀번호로 최신 요청 상태 조회 (틀리면 404, 존재 여부 비노출) |
 | POST | `/api/app/auth/login` | 사용자 로그인. 아이디 = 사업자번호(하이픈 무관). 사업장당 계정 1개 |
 | POST | `/api/app/auth/refresh` | 리프레시 쿠키로 토큰 갱신 (계정 잠금·사업장 정지 시 거부) |
 | GET | `/api/app/auth/me` | 로그인 사용자·사업장·역할 |
@@ -71,6 +73,7 @@ cd app-web && npm run lint && npm run build
 | GET | `/api/admin/signup-requests` | 회원가입 요청 목록. `status`, `q`(사업자번호·상호·대표자), `sort`(OLDEST 기본/LATEST), `page`, `size` |
 | GET | `/api/admin/signup-requests/counts` | 상태별 건수 |
 | GET | `/api/admin/signup-requests/{id}` | 상세 (같은 사업자번호의 다른 요청, 작업 이력 포함) |
+| GET | `/api/admin/signup-requests/{id}/certificate` | 사업자등록증 보기 (관리자만, 서버 비공개 디스크 `STORAGE_DIR`에 저장) |
 | POST | `/api/admin/signup-requests/{id}/approve` | 승인: 사업장·계정·소속 생성, 업종 팩 적용, 작업 이력, 안내 메일 (한 트랜잭션, 메일은 커밋 후 비동기) |
 | POST | `/api/admin/signup-requests/{id}/reject` | 반려 (사유 5자 이상), 작업 이력, 안내 메일 |
 
