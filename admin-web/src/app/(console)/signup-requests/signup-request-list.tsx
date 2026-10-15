@@ -1,9 +1,12 @@
 "use client";
 
+import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { api, ApiError } from "@/lib/api";
-import { type Page, type SignupRequestRow, type SignupStatus, SIGNUP_STATUS_LABEL } from "@/lib/types";
+import StatusBadge from "@/components/status-badge";
+import { formatDateTime } from "@/lib/format";
+import type { Page, SignupRequestRow, SignupStatus } from "@/lib/types";
 
 const TABS: { value: SignupStatus | ""; label: string }[] = [
   { value: "PENDING", label: "승인 대기" },
@@ -12,23 +15,7 @@ const TABS: { value: SignupStatus | ""; label: string }[] = [
   { value: "", label: "전체" },
 ];
 
-const STATUS_BADGE: Record<SignupStatus, string> = {
-  PENDING: "bg-amber-50 text-amber-700 ring-amber-200",
-  APPROVED: "bg-emerald-50 text-emerald-700 ring-emerald-200",
-  REJECTED: "bg-red-50 text-red-700 ring-red-200",
-};
-
 const PAGE_SIZE = 20;
-
-const dateFormat = new Intl.DateTimeFormat("ko-KR", {
-  year: "numeric",
-  month: "2-digit",
-  day: "2-digit",
-  hour: "2-digit",
-  minute: "2-digit",
-  hour12: false,
-  timeZone: "Asia/Seoul",
-});
 
 type Counts = Record<SignupStatus, number>;
 
@@ -190,23 +177,27 @@ export default function SignupRequestList() {
                     </tr>
                   ))
                 : data?.content.map((r) => (
-                    <tr key={r.id} className="hover:bg-gray-50">
+                    <tr
+                      key={r.id}
+                      onClick={() => router.push(`/signup-requests/${r.id}`)}
+                      className="cursor-pointer hover:bg-gray-50"
+                    >
                       <td className="whitespace-nowrap px-4 py-3 tabular-nums text-gray-500">
-                        {dateFormat.format(new Date(r.createdAt))}
+                        {formatDateTime(r.createdAt)}
                       </td>
                       <td className="whitespace-nowrap px-4 py-3 font-mono tabular-nums">{r.businessNo}</td>
-                      <td className="px-4 py-3 font-medium">{r.companyName}</td>
+                      <td className="px-4 py-3 font-medium">
+                        <Link href={`/signup-requests/${r.id}`} onClick={(e) => e.stopPropagation()} className="hover:underline">
+                          {r.companyName}
+                        </Link>
+                      </td>
                       <td className="whitespace-nowrap px-4 py-3">{r.ownerName}</td>
                       <td className="whitespace-nowrap px-4 py-3 text-gray-600">{r.industryName}</td>
                       <td className="whitespace-nowrap px-4 py-3 tabular-nums text-gray-600">{r.phone}</td>
                       <td className="px-4 py-3 text-gray-600">{r.email}</td>
                       <td className="px-4 py-3 text-gray-500">{r.hasCertificate ? "첨부" : "–"}</td>
                       <td className="px-4 py-3">
-                        <span
-                          className={`inline-block whitespace-nowrap rounded-full px-2 py-0.5 text-xs font-medium ring-1 ring-inset ${STATUS_BADGE[r.status]}`}
-                        >
-                          {SIGNUP_STATUS_LABEL[r.status]}
-                        </span>
+                        <StatusBadge status={r.status} />
                       </td>
                     </tr>
                   ))}

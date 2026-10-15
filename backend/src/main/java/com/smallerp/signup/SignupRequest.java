@@ -1,6 +1,8 @@
 package com.smallerp.signup;
 
+import com.smallerp.common.ApiException;
 import com.smallerp.common.BaseTimeEntity;
+import com.smallerp.common.ErrorCode;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -70,8 +72,8 @@ public class SignupRequest extends BaseTimeEntity {
         this.status = SignupStatus.PENDING;
     }
 
-    /** 승인 처리(A-SIGNUP-03)는 다음 단계에서 계정 생성과 함께 붙인다. 지금은 시드 데이터용. */
     public void markApproved(Long adminId, Long tenantId) {
+        requirePending();
         this.status = SignupStatus.APPROVED;
         this.reviewedBy = adminId;
         this.reviewedAt = Instant.now();
@@ -79,10 +81,17 @@ public class SignupRequest extends BaseTimeEntity {
     }
 
     public void markRejected(Long adminId, String reason) {
+        requirePending();
         this.status = SignupStatus.REJECTED;
         this.reviewedBy = adminId;
         this.reviewedAt = Instant.now();
         this.rejectReason = reason;
+    }
+
+    private void requirePending() {
+        if (status != SignupStatus.PENDING) {
+            throw new ApiException(ErrorCode.ALREADY_REVIEWED);
+        }
     }
 
     public Long getId() {
@@ -127,6 +136,14 @@ public class SignupRequest extends BaseTimeEntity {
 
     public String getRejectReason() {
         return rejectReason;
+    }
+
+    public Long getReviewedBy() {
+        return reviewedBy;
+    }
+
+    public Long getTenantId() {
+        return tenantId;
     }
 
     public Instant getReviewedAt() {

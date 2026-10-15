@@ -30,3 +30,14 @@ export type Page<T> = {
   totalElements: number;
   totalPages: number;
 };
+
+export type AuditEntry = { action: "APPROVE" | "REJECT"; adminName: string | null; createdAt: string };
+
+export type SignupRequestDetail = {
+  request: SignupRequestRow;
+  rejectReason: string | null;
+  reviewerName: string | null;
+  tenantId: number | null;
+  history: SignupRequestRow[];
+  auditLogs: AuditEntry[];
+};
