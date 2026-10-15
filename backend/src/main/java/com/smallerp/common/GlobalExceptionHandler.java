@@ -29,6 +29,13 @@ public class GlobalExceptionHandler {
                 .body(new ErrorResponse(code.name(), code.message(), fields));
     }
 
+    @ExceptionHandler(FieldErrorsException.class)
+    public ResponseEntity<ErrorResponse> handleFieldErrors(FieldErrorsException e) {
+        ErrorCode code = ErrorCode.INVALID_INPUT;
+        return ResponseEntity.status(code.status())
+                .body(new ErrorResponse(code.name(), code.message(), e.fieldErrors()));
+    }
+
     @ExceptionHandler({HttpMessageNotReadableException.class, MethodArgumentTypeMismatchException.class})
     public ResponseEntity<ErrorResponse> handleBadRequest(Exception e) {
         return ResponseEntity.badRequest().body(ErrorResponse.of(ErrorCode.INVALID_INPUT));

@@ -62,10 +62,11 @@ cd app-web && npm run lint && npm run build
 | GET | `/api/public/industry-packs` | 회원가입 화면의 업종 목록 |
 | POST | `/api/public/signup-requests` | 회원가입 요청 (사업자번호 검증번호 확인, 중복 요청 차단). JSON, 또는 등록증 첨부 시 multipart(`request` JSON + `certificate` 파일: jpg·png·pdf, 5MB 이하) |
 | POST | `/api/public/signup-requests/status` | 사업자번호 + 비밀번호로 최신 요청 상태 조회 (틀리면 404, 존재 여부 비노출) |
-| POST | `/api/app/auth/login` | 사용자 로그인. 아이디 = 사업자번호(하이픈 무관). 사업장당 계정 1개 |
+| POST | `/api/app/auth/login` | 사용자 로그인. 아이디 = 사업자번호(하이픈 무관). 사업장당 계정 1개. 5번 연속 틀리면 10분 잠금(429 LOGIN_LOCKED, 관리자 로그인도 동일) |
 | POST | `/api/app/auth/refresh` | 리프레시 쿠키로 토큰 갱신 (계정 잠금·사업장 정지 시 거부) |
 | GET | `/api/app/auth/me` | 로그인 사용자·사업장·역할 |
 | POST | `/api/app/auth/logout` | 로그아웃 |
+| GET·PUT | `/api/app/tenant` | 설정 > 사업장 정보 (상호·주소·연락처·요일별 영업시간·기본 하루 생산 가능량·주문 마감 N일). 사업장은 토큰에서만 정함 |
 | POST | `/api/admin/auth/login` | 관리자 로그인 |
 | POST | `/api/admin/auth/refresh` | 리프레시 쿠키로 토큰 갱신 |
 | GET | `/api/admin/auth/me` | 로그인 관리자 |
