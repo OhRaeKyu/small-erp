@@ -2,6 +2,7 @@ package com.smallerp.admin;
 
 import com.smallerp.common.ApiException;
 import com.smallerp.common.ErrorCode;
+import com.smallerp.login.LoginAttemptService;
 import com.smallerp.security.TokenAudience;
 import com.smallerp.security.TokenService;
 import jakarta.validation.Valid;
@@ -28,8 +29,11 @@ public class AdminAuthController {
     private final PlatformAdminRepository admins;
     private final PasswordEncoder passwordEncoder;
     private final TokenService tokens;
+    private final LoginAttemptService loginAttempts;
 
-    public AdminAuthController(PlatformAdminRepository admins, PasswordEncoder passwordEncoder, TokenService tokens) {
+    public AdminAuthController(PlatformAdminRepository admins, PasswordEncoder passwordEncoder, TokenService tokens,
+                               LoginAttemptService loginAttempts) {
+        this.loginAttempts = loginAttempts;
         this.admins = admins;
         this.passwordEncoder = passwordEncoder;
         this.tokens = tokens;
@@ -51,8 +55,13 @@ public class AdminAuthController {
     @Transactional(readOnly = true)
     public ResponseEntity<AdminMe> login(@Valid @RequestBody LoginRequest req) {
         PlatformAdmin admin = admins.findByEmailIgnoreCase(req.email().trim())
-                .filter(a -> passwordEncoder.matches(req.password(), a.getPasswordHash()))
                 .orElseThrow(() -> new ApiException(ErrorCode.INVALID_CREDENTIALS));
+        loginAttempts.checkNotLocked(admin.getLockedUntil());
+        if (!passwordEncoder.matches(req.password(), admin.getPasswordHash())) {
+            loginAttempts.recordFailure(LoginAttemptService.Account.ADMIN, admin.getId());
+            throw new ApiException(ErrorCode.INVALID_CREDENTIALS);
+        }
+        loginAttempts.recordSuccess(LoginAttemptService.Account.ADMIN, admin.getId());
         return ResponseEntity.ok().headers(loginCookies(admin)).body(AdminMe.of(admin));
     }
 

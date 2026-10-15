@@ -3,6 +3,7 @@ package com.smallerp.account;
 import com.smallerp.common.ApiException;
 import com.smallerp.common.BusinessNumber;
 import com.smallerp.common.ErrorCode;
+import com.smallerp.login.LoginAttemptService;
 import com.smallerp.signup.SignupRequest;
 import com.smallerp.signup.SignupRequestRepository;
 import com.smallerp.signup.SignupStatus;
@@ -18,9 +19,12 @@ public class AppAuthService {
     private final MembershipRepository memberships;
     private final SignupRequestRepository signupRequests;
     private final PasswordEncoder passwordEncoder;
+    private final LoginAttemptService loginAttempts;
 
     public AppAuthService(UserRepository users, MembershipRepository memberships,
-                          SignupRequestRepository signupRequests, PasswordEncoder passwordEncoder) {
+                          SignupRequestRepository signupRequests, PasswordEncoder passwordEncoder,
+                          LoginAttemptService loginAttempts) {
+        this.loginAttempts = loginAttempts;
         this.users = users;
         this.memberships = memberships;
         this.signupRequests = signupRequests;
@@ -37,17 +41,24 @@ public class AppAuthService {
         String loginId = businessNo != null ? businessNo : rawLoginId.trim();
 
         User user = users.findByLoginIdIgnoreCase(loginId).orElse(null);
-        if (user == null || !passwordEncoder.matches(password, user.getPasswordHash())) {
-            if (user == null && businessNo != null) {
+        if (user == null) {
+            if (businessNo != null) {
                 throwIfSignupNotApproved(businessNo, password);
             }
+            throw new ApiException(ErrorCode.INVALID_CREDENTIALS);
+        }
+        loginAttempts.checkNotLocked(user.getLockedUntil());
+        if (!passwordEncoder.matches(password, user.getPasswordHash())) {
+            loginAttempts.recordFailure(LoginAttemptService.Account.USER, user.getId());
             throw new ApiException(ErrorCode.INVALID_CREDENTIALS);
         }
         if (user.getStatus() == UserStatus.LOCKED) {
             throw new ApiException(ErrorCode.ACCOUNT_LOCKED);
         }
 
-        return activeMembership(user.getId());
+        Membership membership = activeMembership(user.getId());
+        loginAttempts.recordSuccess(LoginAttemptService.Account.USER, user.getId());
+        return membership;
     }
 
     @Transactional(readOnly = true)

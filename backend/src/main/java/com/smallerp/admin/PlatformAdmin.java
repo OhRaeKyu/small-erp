@@ -9,6 +9,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import java.time.Instant;
 
 @Entity
 @Table(name = "platform_admins")
@@ -31,6 +32,10 @@ public class PlatformAdmin extends BaseTimeEntity {
     @Column(nullable = false)
     private PlatformAdminRole role;
 
+    /** 로그인 잠금 해제 시각. 값 변경은 LoginAttemptService가 SQL로 한다. */
+    @Column(insertable = false, updatable = false)
+    private Instant lockedUntil;
+
     protected PlatformAdmin() {
     }
 
@@ -39,6 +44,10 @@ public class PlatformAdmin extends BaseTimeEntity {
         this.passwordHash = passwordHash;
         this.name = name;
         this.role = role;
+    }
+
+    public Instant getLockedUntil() {
+        return lockedUntil;
     }
 
     public Long getId() {

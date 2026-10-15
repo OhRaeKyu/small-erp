@@ -12,6 +12,7 @@ public enum ErrorCode {
     INVALID_CREDENTIALS(HttpStatus.UNAUTHORIZED, "아이디 또는 비밀번호가 올바르지 않습니다."),
     SIGNUP_PENDING(HttpStatus.FORBIDDEN, "회원가입을 검토하고 있습니다. 승인되면 로그인할 수 있습니다."),
     SIGNUP_REJECTED(HttpStatus.FORBIDDEN, "회원가입이 반려되었습니다. 가입 상태 조회에서 사유를 확인해 주세요."),
+    LOGIN_LOCKED(HttpStatus.TOO_MANY_REQUESTS, "비밀번호를 5번 틀려 10분 동안 로그인할 수 없습니다. 잠시 후 다시 시도해 주세요."),
     ACCOUNT_LOCKED(HttpStatus.FORBIDDEN, "잠긴 계정입니다. 관리자에게 문의해 주세요."),
     TENANT_SUSPENDED(HttpStatus.FORBIDDEN, "이용이 정지된 사업장입니다. 관리자에게 문의해 주세요."),
     NO_MEMBERSHIP(HttpStatus.FORBIDDEN, "소속된 사업장이 없습니다."),

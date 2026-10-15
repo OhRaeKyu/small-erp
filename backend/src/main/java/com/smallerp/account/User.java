@@ -9,6 +9,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import java.time.Instant;
 
 /** 사업장 사용자. 대표는 login_id = 사업자번호, 직원은 login_id = 이메일. */
 @Entity
@@ -35,6 +36,10 @@ public class User extends BaseTimeEntity {
     @Column(nullable = false)
     private UserStatus status;
 
+    /** 로그인 잠금 해제 시각. 값 변경은 LoginAttemptService가 SQL로 한다. */
+    @Column(insertable = false, updatable = false)
+    private Instant lockedUntil;
+
     protected User() {
     }
 
@@ -48,6 +53,10 @@ public class User extends BaseTimeEntity {
 
     public void lock() {
         this.status = UserStatus.LOCKED;
+    }
+
+    public Instant getLockedUntil() {
+        return lockedUntil;
     }
 
     public Long getId() {
