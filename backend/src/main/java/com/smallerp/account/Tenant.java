@@ -9,7 +9,9 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
@@ -38,6 +40,20 @@ public class Tenant extends BaseTimeEntity {
     @Column(nullable = false)
     private String plan = "FREE";
 
+    /** 요일별 영업시간 (월~일 7개) */
+    @JdbcTypeCode(SqlTypes.JSON)
+    private List<BusinessHour> businessHours = new ArrayList<>();
+
+    /** 기본 하루 생산 가능량. 품목별 값이 없을 때 쓴다 */
+    private Integer defaultDailyCapacity;
+
+    /** 픽업 N일 전까지만 주문을 받는다 */
+    private Integer orderLeadDays;
+
+    private String address;
+
+    private String phone;
+
     /** 업종 팩에서 복사한 기본값 등 사업장별 설정 */
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(nullable = false)
@@ -63,6 +79,16 @@ public class Tenant extends BaseTimeEntity {
         return settings;
     }
 
+    public void updateProfile(String name, String address, String phone, List<BusinessHour> businessHours,
+                              Integer defaultDailyCapacity, Integer orderLeadDays) {
+        this.name = name;
+        this.address = address;
+        this.phone = phone;
+        this.businessHours = new ArrayList<>(businessHours);
+        this.defaultDailyCapacity = defaultDailyCapacity;
+        this.orderLeadDays = orderLeadDays;
+    }
+
     public void suspend() {
         this.status = TenantStatus.SUSPENDED;
     }
@@ -85,5 +111,25 @@ public class Tenant extends BaseTimeEntity {
 
     public TenantStatus getStatus() {
         return status;
+    }
+
+    public List<BusinessHour> getBusinessHours() {
+        return businessHours == null ? List.of() : businessHours;
+    }
+
+    public Integer getDefaultDailyCapacity() {
+        return defaultDailyCapacity;
+    }
+
+    public Integer getOrderLeadDays() {
+        return orderLeadDays;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public String getPhone() {
+        return phone;
     }
 }
