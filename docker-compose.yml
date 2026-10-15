@@ -1,0 +1,49 @@
+# 로컬 실행용. 개발 중에는 `docker compose up -d postgres`만 띄우고 각 앱은 직접 실행해도 된다.
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: erp
+      POSTGRES_USER: erp
+      POSTGRES_PASSWORD: erp
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./infra/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U erp -d erp"]
+      interval: 5s
+      retries: 10
+
+  backend:
+    build: ./backend
+    environment:
+      DB_URL: jdbc:postgresql://postgres:5432/erp
+      SPRING_PROFILES_ACTIVE: local
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  app-web:
+    build:
+      context: ./app-web
+      args:
+        BACKEND_URL: http://backend:8080
+    ports:
+      - "3000:3000"
+    depends_on: [backend]
+
+  admin-web:
+    build:
+      context: ./admin-web
+      args:
+        BACKEND_URL: http://backend:8080
+    ports:
+      - "3001:3000"
+    depends_on: [backend]
+
+volumes:
+  pgdata:
