@@ -43,8 +43,24 @@ cd admin-web && npm install && npm run dev    # http://localhost:3001
 
 ### 메일
 
-SMTP 설정(`SPRING_MAIL_HOST`, `SPRING_MAIL_PORT`, `SPRING_MAIL_USERNAME`, `SPRING_MAIL_PASSWORD`, `MAIL_FROM`)이 없으면
-메일을 보내지 않고 백엔드 로그에 내용만 남깁니다. 로컬 개발은 이 상태로 충분합니다.
+SMTP 주소(`spring.mail.host`)가 없으면 메일을 보내지 않고 백엔드 로그에 내용만 남깁니다. 로컬 개발은 이 상태로 충분합니다.
+Gmail로 실제 발송하려면 Google 계정에서 2단계 인증을 켜고 앱 비밀번호(16자리)를 만든 뒤 아래 중 하나로 넣습니다.
+포트 587과 STARTTLS는 `application.yml`에 기본값으로 들어 있습니다.
+
+- 로컬: `backend/config/application-local.yml` (git에 올라가지 않음, local 프로필일 때 Spring이 자동으로 읽음)
+
+  ```yaml
+  spring:
+    mail:
+      host: smtp.gmail.com
+      username: 보내는주소@gmail.com
+      password: 앱비밀번호16자리
+  app:
+    mail:
+      from: 보내는주소@gmail.com
+  ```
+
+- 서버: 환경변수 `SPRING_MAIL_HOST=smtp.gmail.com`, `SPRING_MAIL_USERNAME`, `SPRING_MAIL_PASSWORD`, `MAIL_FROM`
 
 ## 테스트
 
