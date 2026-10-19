@@ -14,6 +14,17 @@ spring:
         jdbc.time_zone: UTC
   flyway:
     enabled: true
+  mail:
+    # host(SPRING_MAIL_HOST)가 있을 때만 실제로 발송한다. Gmail 기준 기본값: 587 포트 + STARTTLS.
+    # 계정·앱 비밀번호는 저장소에 넣지 않는다 (환경변수 또는 git에 안 올라가는 backend/config/ 파일).
+    port: ${SPRING_MAIL_PORT:587}
+    properties:
+      mail.smtp.auth: true
+      mail.smtp.starttls.enable: true
+      mail.smtp.starttls.required: true
+      mail.smtp.connectiontimeout: 5000
+      mail.smtp.timeout: 5000
+      mail.smtp.writetimeout: 5000
   servlet:
     multipart:
       # 사업자등록증 5MB + 입력값
